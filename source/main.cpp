@@ -25,11 +25,9 @@ int main()
 
 	Camera &camera = Utility::camera;
 
-	ScreenRay &screenRay = Utility::screenRay;
+	camera.GenerateRay();
 
-	screenRay.GenerateRay();
-
-	auto tuple = Utility::SetVAOVBO(screenRay.vertices);
+	auto tuple = Utility::SetVAOVBO(camera.vertices);
 	unsigned int VAO = std::get<0>(tuple);
 	unsigned int VBO = std::get<1>(tuple);
 	// auto[VAO, VBO] = Utility::SetVAOVBO(screenRay.vertices); // optional

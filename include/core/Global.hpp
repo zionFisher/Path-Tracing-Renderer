@@ -21,7 +21,9 @@ namespace Global
 
     const glm::vec3 WorldFront = glm::vec3(0.0f, 0.0f, 1.0f);
     const glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    const glm::vec3 WorldRight = glm::vec3(1.0f, 0.0f, 0.0f);
+    const glm::vec3 WorldLeft = glm::vec3(1.0f, 0.0f, 0.0f);
+    const glm::vec3 WorldRight = -WorldLeft;
+    const glm::vec3 CameraPos = glm::vec3(OriginX, OriginY, OriginZ);
     const float CameraYaw = 0.0f;
     const float CameraPitch = 0.0f;
     const float CameraRoll = 0.0f;

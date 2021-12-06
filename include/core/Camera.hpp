@@ -20,7 +20,8 @@ class Camera
 public:
     glm::vec3 Position;
     glm::vec3 Front;
-    glm::vec3 Right;
+    glm::vec3 Left;
+    glm::vec3 Up;
 
     float Yaw;
     float Pitch;
@@ -29,7 +30,15 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
 
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f));
+    float *vertices;
+
+    Camera(glm::vec3 position = Global::CameraPos,
+           glm::vec3 front = Global::WorldFront,
+           glm::vec3 left = Global::WorldLeft);
+
+    ~Camera();
+
+    void GenerateRay();
 
     glm::mat4 GetRotateMatrix();
 
@@ -41,22 +50,53 @@ private:
     void UpdateCameraVectors();
 };
 
-Camera::Camera(glm::vec3 position)
-             : Position(position),
-               Front(Global::WorldFront),
-               //Up(Global::WorldUp),
-               Right(Global::WorldRight),
-               Yaw(0.0f), Pitch(0.0f), //Roll(0.0f),
-               MovementSpeed(Global::CameraSpeed),
-               MouseSensitivity(Global::CameraSensitivity)
+Camera::Camera(glm::vec3 position,
+               glm::vec3 front,
+               glm::vec3 left)
+    : Position(position),
+      Front(front),
+      Left(left),
+      Yaw(0.0f),
+      Pitch(0.0f),
+      //Roll(0.0f),
+      MovementSpeed(Global::CameraSpeed),
+      MouseSensitivity(Global::CameraSensitivity)
 {
+    vertices = new float[Global::PixelCount * 5];
+}
 
+Camera::~Camera()
+{
+    delete[] vertices;
+}
+
+void Camera::GenerateRay()
+{
+    int counter = 0;
+
+    for (int j = 0; j < Global::ScreenHeight; ++j)
+    {
+        for (int i = 0; i < Global::ScreenWidth; ++i)
+        {
+            float worldSpaceCoordX = 2 * ((float)i + 0.5) / (float)Global::ScreenWidth - 1;
+            float worldSpaceCoordY = 2 * ((float)j + 0.5) / (float)Global::ScreenHeight - 1; // OpenGL 屏幕坐标原点在左下角
+
+            float x = worldSpaceCoordX * Global::ImageAspectRatio * Global::Scale;
+            float y = worldSpaceCoordY * Global::Scale;
+            glm::vec3 dir = normalize(glm::vec3(x, y, 1));
+
+            for (int temp = 0; temp < 3; temp++)
+                vertices[counter++] = dir[temp];
+            vertices[counter++] = worldSpaceCoordX;
+            vertices[counter++] = worldSpaceCoordY;
+        }
+    }
 }
 
 glm::mat4 Camera::GetRotateMatrix()
 {
     glm::mat4 rotate = glm::identity<glm::mat4>();
-    rotate = glm::rotate(rotate, glm::radians(-Pitch), Right);
+    rotate = glm::rotate(rotate, glm::radians(-Pitch), Left);
     rotate = glm::rotate(rotate, glm::radians(Yaw), Global::WorldUp);
     // rotate = glm::rotate(rotate, glm::radians(Roll), Front);
 
@@ -71,9 +111,9 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
     if (direction == BACKWARD)
         Position -= Front * velocity;
     if (direction == LEFT)
-        Position -= Right * velocity;
+        Position += Left * velocity;
     if (direction == RIGHT)
-        Position += Right * velocity;
+        Position -= Left * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
@@ -81,7 +121,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 
-    Yaw += xoffset;
+    Yaw -= xoffset;
     Pitch += yoffset;
 
     // make sure that when pitch is out of bounds, screen doesn't get flipped
@@ -106,8 +146,8 @@ void Camera::UpdateCameraVectors()
     front.z = cos(glm::radians(Pitch)) * cos(glm::radians(Yaw));
 
     Front = glm::normalize(front);
-
-    Right = glm::normalize(glm::cross(Global::WorldUp, Front)); // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    Left = glm::normalize(glm::cross(Global::WorldUp, Front)); // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    Up = glm::normalize(glm::cross(Front, Left));
 }
 
 #endif

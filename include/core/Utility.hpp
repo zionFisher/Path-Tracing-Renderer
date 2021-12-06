@@ -15,7 +15,6 @@
 
 #include "Global.hpp"
 #include "Camera.hpp"
-#include "ScreenRay.hpp"
 #include "shader.hpp"
 #include "model.hpp"
 
@@ -24,9 +23,7 @@ namespace Utility
 	// Variables-------------------------------------------------------------------
 
 	// camera and screen ray generater
-	Camera camera(glm::vec3(Global::OriginX, Global::OriginY, Global::OriginZ));
-
-	ScreenRay screenRay;
+	Camera camera(Global::CameraPos, Global::WorldFront, Global::WorldLeft);
 
 	// coords and time
 	float lastX = Global::ScreenWidth / 2.0f;
@@ -149,6 +146,8 @@ namespace Utility
 		return std::tuple<unsigned int, unsigned int>{VAO, VBO};
 	}
 
+	glm::vec3 test = glm::vec3(1.0, 0.0, 0.0);
+
 	// Process and Callbacks
 	void ProcessInput(GLFWwindow *window)
 	{
@@ -163,6 +162,8 @@ namespace Utility
 			camera.ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			camera.ProcessKeyboard(RIGHT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			camera.Position += Global::WorldLeft * camera.MovementSpeed * deltaTime;
 	}
 
 	void ProcessTime()

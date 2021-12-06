@@ -6,9 +6,9 @@
 
 struct RGBColor
 {
-    unsigned int R;
-    unsigned int G;
-    unsigned int B;
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
 };
 
 using ResultColor = RGBColor;
@@ -57,7 +57,7 @@ FrameSaver::~FrameSaver()
 
 void FrameSaver::SaveBuffer()
 {
-    glReadPixels(0, 0, Global::ScreenWidth, Global::ScreenHeight, GL_RGB, GL_UNSIGNED_INT, colorBuffer);
+    glReadPixels(0, 0, Global::ScreenWidth, Global::ScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, colorBuffer);
     bufferIsSaved = true;
 }
 
@@ -108,9 +108,9 @@ void FrameSaver::WritePPM(const char *fileName)
 
     for (int i = Global::PixelCount - 1; i > -1; --i)
     {
-        outStream << colorBuffer[i].R << " "
-                  << colorBuffer[i].G << " "
-                  << colorBuffer[i].B << std::endl;
+        outStream << (unsigned int)colorBuffer[i].R << " "
+                  << (unsigned int)colorBuffer[i].G << " "
+                  << (unsigned int)colorBuffer[i].B << std::endl;
         // outStream << resultBuffer[i].R << " "
         //           << resultBuffer[i].G << " "
         //           << resultBuffer[i].B << std::endl;
