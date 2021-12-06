@@ -74,12 +74,12 @@ void Camera::GenerateRay()
 {
     int counter = 0;
 
-    for (int j = 0; j < Global::ScreenHeight; ++j)
+    for (int j = 0; j < Global::WindowHeight; ++j)
     {
-        for (int i = 0; i < Global::ScreenWidth; ++i)
+        for (int i = 0; i < Global::WindowWidth; ++i)
         {
-            float worldSpaceCoordX = 2 * ((float)i + 0.5) / (float)Global::ScreenWidth - 1;
-            float worldSpaceCoordY = 2 * ((float)j + 0.5) / (float)Global::ScreenHeight - 1; // OpenGL 屏幕坐标原点在左下角
+            float worldSpaceCoordX = 2 * ((float)i + 0.5) / (float)Global::WindowWidth - 1;
+            float worldSpaceCoordY = 2 * ((float)j + 0.5) / (float)Global::WindowHeight - 1; // OpenGL 屏幕坐标原点在左下角
 
             float x = worldSpaceCoordX * Global::ImageAspectRatio * Global::Scale;
             float y = worldSpaceCoordY * Global::Scale;

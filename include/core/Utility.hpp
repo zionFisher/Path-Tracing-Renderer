@@ -26,8 +26,8 @@ namespace Utility
 	Camera camera(Global::CameraPos, Global::WorldFront, Global::WorldLeft);
 
 	// coords and time
-	float lastX = Global::ScreenWidth / 2.0f;
-	float lastY = Global::ScreenHeight / 2.0f;
+	float lastX = Global::WindowWidth / 2.0f;
+	float lastY = Global::WindowHeight / 2.0f;
 	bool firstMouse = true;
 
 	float deltaTime = 0.0f;
@@ -90,7 +90,7 @@ namespace Utility
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		GLFWwindow *window = glfwCreateWindow(Global::ScreenWidth, Global::ScreenHeight, Global::WindowName, NULL, NULL);
+		GLFWwindow *window = glfwCreateWindow(Global::WindowWidth, Global::WindowHeight, Global::WindowName.c_str(), NULL, NULL);
 
 		if (window == NULL)
 		{
@@ -135,7 +135,7 @@ namespace Utility
 		glGenBuffers(1, &VBO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, Global::ScreenHeight * Global::ScreenWidth * sizeof(float) * 5, vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, Global::WindowHeight * Global::WindowWidth * sizeof(float) * 5, vertices, GL_STATIC_DRAW);
 
 		glBindVertexArray(VAO);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
@@ -145,8 +145,6 @@ namespace Utility
 
 		return std::tuple<unsigned int, unsigned int>{VAO, VBO};
 	}
-
-	glm::vec3 test = glm::vec3(1.0, 0.0, 0.0);
 
 	// Process and Callbacks
 	void ProcessInput(GLFWwindow *window)
@@ -162,8 +160,6 @@ namespace Utility
 			camera.ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			camera.ProcessKeyboard(RIGHT, deltaTime);
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-			camera.Position += Global::WorldLeft * camera.MovementSpeed * deltaTime;
 	}
 
 	void ProcessTime()
@@ -201,7 +197,7 @@ namespace Utility
 	// 	   camera.ProcessMouseScroll(yoffset);
 	// }
 
-	// Other Utility
+	// Other Utility Functions
 	unsigned int LoadTexture(char const *path)
 	{
 		// stbi_set_flip_vertically_on_load(true);

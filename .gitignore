@@ -1,1 +1,3 @@
 .vscode/*
+source/*.exe
+result.ppm

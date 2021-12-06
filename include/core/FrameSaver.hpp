@@ -1,6 +1,8 @@
 #ifndef FRAMESAVER_HPP
 #define FRAMESAVER_HPP
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.hpp"
 #include "Global.hpp"
 #include <fstream>
 
@@ -13,14 +15,6 @@ struct RGBColor
 
 using ResultColor = RGBColor;
 
-enum ImageType
-{
-    PPM,
-    BMP,
-    PNG,
-    JPG
-};
-
 class FrameSaver
 {
 private:
@@ -28,21 +22,22 @@ private:
 
     RGBColor *colorBuffer; // color buffer
 
+    unsigned char *realBuffer;
+
     int counter = 0;
 
     void WriteAuthor(std::ofstream &outStream);
 
-    void WritePPM(const char *fileName);
-    void WriteBMP(const char *fileName);
     void WritePNG(const char *fileName);
     void WriteJPG(const char *fileName);
+    void WritePPM(const char *fileName);
 
 public:
     FrameSaver();
     ~FrameSaver();
 
     void SaveBuffer();
-    void SaveImage(const char *fileName, ImageType type);
+    void SaveImage(const char *fileName, Global::ImageType type);
 };
 
 FrameSaver::FrameSaver() : bufferIsSaved(false)
@@ -57,28 +52,26 @@ FrameSaver::~FrameSaver()
 
 void FrameSaver::SaveBuffer()
 {
-    glReadPixels(0, 0, Global::ScreenWidth, Global::ScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, colorBuffer);
+    glReadPixels(0, 0, Global::WindowWidth, Global::WindowHeight, GL_RGB, GL_UNSIGNED_BYTE, colorBuffer);
+
     bufferIsSaved = true;
 }
 
-void FrameSaver::SaveImage(const char *fileName, ImageType type)
+void FrameSaver::SaveImage(const char *fileName, Global::ImageType type)
 {
     if (!bufferIsSaved)
         return;
 
     switch (type)
     {
-    case PPM:
-        WritePPM(fileName);
-        break;
-    case BMP:
-        WriteBMP(fileName);
-        break;
-    case PNG:
+    case Global::ImageType::PNG:
         WritePNG(fileName);
         break;
-    case JPG:
+    case Global::ImageType::JPG:
         WriteJPG(fileName);
+        break;
+    case Global::ImageType::PPM:
+        WritePPM(fileName);
         break;
 
     default:
@@ -95,6 +88,28 @@ void FrameSaver::WriteAuthor(std::ofstream &outStream)
     outStream << Global::Author << std::endl;
 }
 
+void FrameSaver::WritePNG(const char *fileName)
+{
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png(fileName, Global::WindowWidth, Global::WindowHeight, 3, colorBuffer, Global::WindowWidth * 3);
+}
+
+void FrameSaver::WriteJPG(const char *fileName)
+{
+    stbi_flip_vertically_on_write(true);
+    stbi_write_jpg(fileName, Global::WindowWidth, Global::WindowHeight, 3, colorBuffer, 100);
+}
+
+/* PPM output image format:
+ * P3
+ * Global::WindowWidth Global::WindowHeight
+ * 255
+ * 0 0 0
+ * 0 0 0
+ * 255 255 255
+ * ...
+ * # Author: ...
+ */
 void FrameSaver::WritePPM(const char *fileName)
 {
     std::ofstream outStream;
@@ -102,38 +117,32 @@ void FrameSaver::WritePPM(const char *fileName)
     if (!outStream.is_open())
         return;
 
-    outStream << "P3\n"
-              << Global::ScreenWidth << " " << Global::ScreenHeight << std::endl
-              << "255\n";
+    outStream << "P3" << std::endl
+              << Global::WindowWidth << " " << Global::WindowHeight << std::endl
+              << "255" << std::endl;
 
-    for (int i = Global::PixelCount - 1; i > -1; --i)
+    // Framebuffer starts from the lower left to the upper right
+    // PPM Image starts from the upper left to the lower right
+    for (int row = Global::WindowHeight - 1; row > -1; row--)
     {
-        outStream << (unsigned int)colorBuffer[i].R << " "
-                  << (unsigned int)colorBuffer[i].G << " "
-                  << (unsigned int)colorBuffer[i].B << std::endl;
-        // outStream << resultBuffer[i].R << " "
-        //           << resultBuffer[i].G << " "
-        //           << resultBuffer[i].B << std::endl;
+        for (int column = 0; column < Global::WindowWidth; column++)
+        {
+            int preIndex = row * Global::WindowWidth;
+            int curIndex = preIndex + column;
+            outStream << (unsigned int)colorBuffer[curIndex].R << " "
+                      << (unsigned int)colorBuffer[curIndex].G << " "
+                      << (unsigned int)colorBuffer[curIndex].B;
+
+            if (column == Global::WindowWidth - 1)
+                outStream << std::endl;
+            else
+                outStream << " ";
+        }
     }
 
     WriteAuthor(outStream);
 
     outStream.close();
-}
-
-void FrameSaver::WriteBMP(const char *fileName)
-{
-    throw -1;
-}
-
-void FrameSaver::WritePNG(const char *fileName)
-{
-    throw -1;
-}
-
-void FrameSaver::WriteJPG(const char *fileName)
-{
-    throw -1;
 }
 
 #endif
