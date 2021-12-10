@@ -30,7 +30,7 @@ int main()
 	// unsigned int VBO = std::get<1>(tuple); // uncomment if necessary.
 
 	pathTracingShader.use();
-	pathTracingShader.setInt("spp", spp);
+	pathTracingShader.setInt("spp", 1); // currently, high spp real time rendering is not supported.
 	pathTracingShader.setVec2("Screen", WindowWidth, WindowHeight);
 	pathTracingShader.setArray("Triangles", sizeof(triangleVertices), const_cast<float *>(triangleVertices));
 	pathTracingShader.setFloat("RussianRoulette", RussianRoulette);
@@ -40,9 +40,13 @@ int main()
 
 	glm::mat4 rayRotateMatrix = glm::identity<glm::mat4>();
 
+	int counter = 0;
+
 	// render loop=================================================================================
 	while (!glfwWindowShouldClose(window))
 	{
+		std::cout << "Frame count: " << counter << std::endl;
+		counter++;
 		Utility::ProcessTime();
 		Utility::ProcessInput(window);
 

@@ -5,26 +5,17 @@
 #include "stb_image_write.hpp"
 #include "Global.hpp"
 #include <fstream>
-
-struct RGBColor
-{
-    unsigned char R;
-    unsigned char G;
-    unsigned char B;
-};
-
-using ResultColor = RGBColor;
+#include <cstring>
 
 class FrameSaver
 {
 private:
     bool bufferIsSaved;
 
-    RGBColor *colorBuffer; // color buffer
+    unsigned char *colorBuffer;
+    float *multiSampleBuffer;
 
-    unsigned char *realBuffer;
-
-    int counter = 0;
+    unsigned int counter;
 
     void WriteAuthor(std::ofstream &outStream);
 
@@ -40,19 +31,37 @@ public:
     void SaveImage(const char *fileName, Global::ImageType type);
 };
 
-FrameSaver::FrameSaver() : bufferIsSaved(false)
+FrameSaver::FrameSaver() : bufferIsSaved(false), counter(0)
 {
-    colorBuffer = new RGBColor[Global::PixelCount];
+    colorBuffer = new unsigned char[3 * Global::PixelCount];
+    multiSampleBuffer = new float[3 * Global::PixelCount];
 }
 
 FrameSaver::~FrameSaver()
 {
     delete[] colorBuffer;
+    delete[] multiSampleBuffer;
 }
 
 void FrameSaver::SaveBuffer()
 {
+    if (counter > Global::spp)
+        return;
+
+    if (counter == Global::spp)
+    {
+        for (int i = 0; i < 3 * Global::PixelCount; i++)
+            colorBuffer[i] = (unsigned char)multiSampleBuffer[i];
+        return;
+    }
+
+    counter++;
+    glReadBuffer(GL_FRONT);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glReadPixels(0, 0, Global::WindowWidth, Global::WindowHeight, GL_RGB, GL_UNSIGNED_BYTE, colorBuffer);
+
+    for (int i = 0; i < 3 * Global::PixelCount; i++)
+        multiSampleBuffer[i] += ((float)colorBuffer[i] / (float)Global::spp);
 
     bufferIsSaved = true;
 }
@@ -127,11 +136,11 @@ void FrameSaver::WritePPM(const char *fileName)
     {
         for (int column = 0; column < Global::WindowWidth; column++)
         {
-            int preIndex = row * Global::WindowWidth;
-            int curIndex = preIndex + column;
-            outStream << (unsigned int)colorBuffer[curIndex].R << " "
-                      << (unsigned int)colorBuffer[curIndex].G << " "
-                      << (unsigned int)colorBuffer[curIndex].B;
+            int preIndex = row * Global::WindowWidth * 3;
+            int curIndex = preIndex + column * 3;
+            outStream << (unsigned int)colorBuffer[curIndex] << " "
+                      << (unsigned int)colorBuffer[curIndex + 1] << " "
+                      << (unsigned int)colorBuffer[curIndex + 2];
 
             if (column == Global::WindowWidth - 1)
                 outStream << std::endl;

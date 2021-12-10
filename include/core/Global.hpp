@@ -3,6 +3,12 @@
 
 namespace Global
 {
+    // path tracing arguments----------------------------------------------------------------------
+
+    const int spp = 128;
+    const float RussianRoulette = 0.8f;
+    const float IndirLightContributionRate = 1;
+
     // constants-----------------------------------------------------------------------------------
 
     const float Pi = 3.1415926535897f;
@@ -16,9 +22,11 @@ namespace Global
     // image configuration-------------------------------------------------------------------------
 
     enum ImageType { PNG, JPG, PPM };
+    const std::string EnumString[] = { "png", "jpg", "ppm"};
+    const std::string ImagePath = ".\\image\\";
     const std::string Author = "# Author: zionFisher GitHub: https://github.com/zionFisher\n# 2021";
-    const std::string ImageName = "result_spp_1.png";
     const ImageType ImageFileType = PNG;
+    const std::string ImageName = ImagePath + "result_spp_" + std::to_string(spp) + "." + EnumString[ImageFileType];
 
     // camera configuration------------------------------------------------------------------------
 
@@ -48,12 +56,6 @@ namespace Global
     const float ImageAspectRatio = WindowWidth / (float)WindowHeight;
     const unsigned int FOV = 40;
     const float Scale = std::tan(deg2rad(FOV * 0.5));
-
-    // path tracing arguments----------------------------------------------------------------------
-
-    const int spp = 1;
-    const float RussianRoulette = 0.8f;
-    const float IndirLightContributionRate = 1;
 
 }
 

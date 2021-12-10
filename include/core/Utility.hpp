@@ -15,6 +15,7 @@
 
 #include "Global.hpp"
 #include "Camera.hpp"
+#include "CornellBox.hpp"
 #include "shader.hpp"
 #include "model.hpp"
 
@@ -45,6 +46,8 @@ namespace Utility
 	bool InitGlad();
 
 	std::tuple<unsigned int, unsigned int> SetVAOVBO(float *vertices);
+
+	void PathTracingShaderSetup(Shader &shader);
 
 	// Process and Callbacks
 	void ProcessInput(GLFWwindow *window);
