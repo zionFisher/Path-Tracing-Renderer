@@ -2,10 +2,10 @@
 #define FRAMESAVER_HPP
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.hpp"
 #include "Global.hpp"
 #include <fstream>
 #include <cstring>
+#include <stbi/stb_image_write.hpp>
 
 class FrameSaver
 {
